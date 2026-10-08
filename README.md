@@ -21,13 +21,13 @@ This is a **template repo**. Click **Use this template → Create a new reposito
 
 _Pick one in Module 2: no switching after M2._
 
-- [ ] The Retention Engine (B2B SaaS, value risk)
+- [x] The Retention Engine (B2B SaaS, value risk)
 - [ ] The Internal Tool Nobody Uses (CRM, usability)
 - [ ] The Marketplace Trust Problem (value / feasibility)
 - [ ] The Dashboard Nobody Reads (usability)
 - [ ] Bring your own (instructor-approved)
 
-**Chosen scenario:** _____
+**Chosen scenario:** The Retention Engine (B2B SaaS, value risk). **Churn Watch** is the first screen a customer success manager sees: a ranked worklist of the accounts most likely to churn in the next 30 days, each with a health score against a benchmark, its top risk reason, and a recommended next step.
 
 ## The three ingredients (visible in every build)
 

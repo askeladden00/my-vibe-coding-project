@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>At-Risk Accounts</title>
+<style>
+  :root {
+    --bg: #f7f7f5;
+    --surface: #ffffff;
+    --text: #1c1c1a;
+    --muted: #6b6b66;
+    --border: #e4e4df;
+    --track: #ececE7;
+    --risk-high: #b42318;
+    --risk-mid: #a15c07;
+    --risk-low: #2e7d32;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #141413;
+      --surface: #1d1d1b;
+      --text: #ecece8;
+      --muted: #a3a39c;
+      --border: #2f2f2c;
+      --track: #34342f;
+      --risk-high: #f97066;
+      --risk-mid: #fdb022;
+      --risk-low: #6ccf7a;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #141413;
+    --surface: #1d1d1b;
+    --text: #ecece8;
+    --muted: #a3a39c;
+    --border: #2f2f2c;
+    --track: #34342f;
+    --risk-high: #f97066;
+    --risk-mid: #fdb022;
+    --risk-low: #6ccf7a;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font: 15px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+  main { max-width: 1040px; margin: 0 auto; padding: 40px 24px; }
+  h1 { font-size: 22px; font-weight: 600; margin: 0 0 4px; }
+  .count { color: var(--muted); margin: 0 0 24px; }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  th, td { text-align: left; padding: 14px 16px; vertical-align: middle; }
+  th {
+    font-size: 12px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase;
+    color: var(--muted); border-bottom: 1px solid var(--border);
+  }
+  tbody tr + tr td { border-top: 1px solid var(--border); }
+
+  .account { font-weight: 600; }
+  .rank { color: var(--muted); font-variant-numeric: tabular-nums; margin-right: 10px; font-weight: 400; }
+  .churn { font-variant-numeric: tabular-nums; font-weight: 600; white-space: nowrap; }
+  .health { display: flex; align-items: center; gap: 10px; min-width: 140px; }
+  .health-num { font-variant-numeric: tabular-nums; font-weight: 600; width: 2ch; text-align: right; }
+  .bar { flex: 1; height: 6px; background: var(--track); border-radius: 3px; overflow: hidden; max-width: 96px; }
+  .bar > span { display: block; height: 100%; border-radius: 3px; }
+  .high { color: var(--risk-high); } .high .bar > span, .bar > span.high { background: var(--risk-high); }
+  .mid  { color: var(--risk-mid); }  .bar > span.mid  { background: var(--risk-mid); }
+  .low  { color: var(--risk-low); }  .bar > span.low  { background: var(--risk-low); }
+  .reason { color: var(--text); }
+
+  @media (max-width: 640px) {
+    main { padding: 24px 16px; }
+    table, tbody, tr, td { display: block; width: 100%; }
+    thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+    table { border: 0; background: none; }
+    tbody tr {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+      padding: 12px 14px; margin-bottom: 10px;
+    }
+    tbody tr + tr td { border-top: 0; }
+    td { padding: 4px 0; }
+    td[data-label]::before {
+      content: attr(data-label); display: inline-block; width: 7.5em;
+      color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: .04em;
+    }
+    .health { display: flex; }
+    .health::before { flex: none; }
+    td.reason { margin-top: 4px; }
+    td.reason::before { display: block !important; width: auto !important; margin-bottom: 2px; }
+  }
+</style>
+</head>
+<body>
+<main>
+  <h1>Accounts at risk — next 30 days</h1>
+  <p class="count" id="count"></p>
+  <table>
+    <thead>
+      <tr>
+        <th scope="col">Account</th>
+        <th scope="col">Churn likelihood</th>
+        <th scope="col">Health score</th>
+        <th scope="col">Top risk reason</th>
+      </tr>
+    </thead>
+    <tbody id="rows"></tbody>
+  </table>
+</main>
+
+<script>
+  // ---- Mock data: replace with a fetch() from your CS platform later ----
+  const accounts = [
+    { id: "acc-001", name: "Northwind Logistics",   healthScore: 22, churnProbability30d: 0.81, topRiskReason: "Executive sponsor left the company; no replacement identified" },
+    { id: "acc-002", name: "Brightline Dental",     healthScore: 28, churnProbability30d: 0.74, topRiskReason: "Weekly active users down 42% over the last 30 days" },
+    { id: "acc-003", name: "Cobalt Freight",        healthScore: 31, churnProbability30d: 0.69, topRiskReason: "Evaluating a competitor (mentioned on last call)" },
+    { id: "acc-004", name: "Harbor & Pine Realty",  healthScore: 35, churnProbability30d: 0.63, topRiskReason: "Renewal in 18 days with no QBR held this year" },
+    { id: "acc-005", name: "Meridian Health Group", healthScore: 38, churnProbability30d: 0.58, topRiskReason: "3 unresolved P1 support tickets older than 10 days" },
+    { id: "acc-006", name: "Fieldstone Analytics",  healthScore: 41, churnProbability30d: 0.52, topRiskReason: "Invoice 45 days overdue" },
+    { id: "acc-007", name: "Quillon Legal",         healthScore: 44, churnProbability30d: 0.47, topRiskReason: "Only 2 of 25 licensed seats active" },
+    { id: "acc-008", name: "Arcadia Outdoor Co.",   healthScore: 47, churnProbability30d: 0.43, topRiskReason: "Requested downgrade to a smaller plan" },
+    { id: "acc-009", name: "Tidewater Schools",     healthScore: 52, churnProbability30d: 0.38, topRiskReason: "Budget freeze announced for next fiscal year" },
+    { id: "acc-010", name: "Lumen Robotics",        healthScore: 55, churnProbability30d: 0.33, topRiskReason: "NPS dropped from 8 to 3 in latest survey" },
+    { id: "acc-011", name: "Granite Peak Credit",   healthScore: 58, churnProbability30d: 0.29, topRiskReason: "Key integration disconnected 12 days ago" },
+    { id: "acc-012", name: "Saffron Hospitality",   healthScore: 63, churnProbability30d: 0.24, topRiskReason: "Champion unresponsive to last 4 outreach attempts" },
+    { id: "acc-013", name: "Orchard Street Media",  healthScore: 66, churnProbability30d: 0.21, topRiskReason: "Acquired by a company using a competing tool" },
+    { id: "acc-014", name: "Kestrel Aviation",      healthScore: 74, churnProbability30d: 0.14, topRiskReason: "Usage plateaued after onboarding" },
+    { id: "acc-015", name: "Bluebell Bakeries",     healthScore: 82, churnProbability30d: 0.06, topRiskReason: "Minor dip in login frequency" },
+  ];
+  // -----------------------------------------------------------------------
+
+  const RISK_THRESHOLD = 0.2;
+
+  function band(score) {
+    if (score <= 40) return "high";
+    if (score <= 70) return "mid";
+    return "low";
+  }
+
+  function cell(label, className) {
+    const td = document.createElement("td");
+    if (label) td.dataset.label = label;
+    if (className) td.className = className;
+    return td;
+  }
+
+  function render(list) {
+    const atRisk = list
+      .filter(a => a.churnProbability30d >= RISK_THRESHOLD)
+      .sort((a, b) => b.churnProbability30d - a.churnProbability30d);
+
+    document.getElementById("count").textContent =
+      atRisk.length + (atRisk.length === 1 ? " account" : " accounts") + ", ranked by likelihood to churn";
+
+    const tbody = document.getElementById("rows");
+    tbody.replaceChildren();
+
+    atRisk.forEach((a, i) => {
+      const tr = document.createElement("tr");
+
+      const name = cell(null, "account");
+      const rank = document.createElement("span");
+      rank.className = "rank";
+      rank.textContent = i + 1;
+      name.append(rank, document.createTextNode(a.name));
+
+      const churn = cell("Churn", "churn");
+      churn.textContent = Math.round(a.churnProbability30d * 100) + "%";
+
+      const b = band(a.healthScore);
+      const health = cell("Health", "health " + b);
+      const num = document.createElement("span");
+      num.className = "health-num";
+      num.textContent = a.healthScore;
+      const bar = document.createElement("span");
+      bar.className = "bar";
+      bar.setAttribute("aria-hidden", "true");
+      const fill = document.createElement("span");
+      fill.className = b;
+      fill.style.width = a.healthScore + "%";
+      bar.append(fill);
+      health.append(num, bar);
+
+      tr.append(name, churn, health, (() => {
+        const reason = cell("Top risk reason", "reason");
+        reason.textContent = a.topRiskReason;
+        return reason;
+      })());
+      tbody.append(tr);
+    });
+  }
+
+  render(accounts);
+</script>
+</body>
+</html>

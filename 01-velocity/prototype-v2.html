@@ -3,7 +3,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap">
 <style>
-  /* Layout: header + how-to-read, summary strip, then one ranked worklist where each row ends in a concrete next step */
+  /* Layout: header + how-to-read, summary strip, filterable ranked worklist; clicking an account opens a detail panel on the right */
   :root {
     --bg: #f4f6f8;
     --surface: #ffffff;
@@ -13,9 +13,15 @@
     --track: #e7ebef;
     --accent: #0f6e75;
     --accent-soft: #e3f1f1;
+    --row-hover: #f1f4f7;
+    --row-selected: #e8f1f2;
+    --scrim: rgba(23, 32, 42, .32);
     --risk-high: #b42318;
     --risk-mid: #9a5a06;
     --risk-low: #2e7d32;
+    --high-soft: #fdecea;
+    --mid-soft: #fdf1df;
+    --neutral-soft: #eef1f4;
     --font-body: "Figtree", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     --font-data: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
   }
@@ -23,20 +29,27 @@
     :root:not([data-theme="light"]) {
       --bg: #11161b; --surface: #182029; --text: #e6ebf0; --muted: #98a6b3;
       --border: #2a343f; --track: #2c3640; --accent: #5cc3c9; --accent-soft: #173238;
+      --row-hover: #1d2731; --row-selected: #1a3036; --scrim: rgba(0, 0, 0, .5);
       --risk-high: #f97066; --risk-mid: #f5b546; --risk-low: #6ccf7a;
+      --high-soft: #3a1e1d; --mid-soft: #3a2c14; --neutral-soft: #24303b;
       color-scheme: dark;
     }
   }
   :root[data-theme="dark"] {
     --bg: #11161b; --surface: #182029; --text: #e6ebf0; --muted: #98a6b3;
     --border: #2a343f; --track: #2c3640; --accent: #5cc3c9; --accent-soft: #173238;
+    --row-hover: #1d2731; --row-selected: #1a3036; --scrim: rgba(0, 0, 0, .5);
     --risk-high: #f97066; --risk-mid: #f5b546; --risk-low: #6ccf7a;
+    --high-soft: #3a1e1d; --mid-soft: #3a2c14; --neutral-soft: #24303b;
     color-scheme: dark;
   }
 
   * { box-sizing: border-box; }
   body { background: var(--bg); color: var(--text); font: 15px/1.5 var(--font-body); }
+  body.panel-open { overflow: hidden; }
   main { max-width: 1120px; margin: 0 auto; padding: 36px 24px 56px; display: grid; gap: 24px; }
+  button { font: inherit; color: inherit; }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
   /* Header */
   header { display: grid; gap: 10px; }
@@ -49,7 +62,7 @@
   /* Summary + benchmark */
   .summary { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)) minmax(0, 1.4fr); gap: 12px; }
   .stat, .guide { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; min-width: 0; }
-  .stat .label, .guide .label { font-size: 12px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); }
+  .label { font-size: 12px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); }
   .stat .value { font: 600 24px/1.2 var(--font-data); margin-top: 6px; font-variant-numeric: tabular-nums; }
   .stat .note { font-size: 13px; color: var(--muted); }
   .guide ul { list-style: none; margin: 8px 0 0; padding: 0; display: grid; gap: 4px; font-size: 13px; }
@@ -58,23 +71,48 @@
   .dot.high { background: var(--risk-high); } .dot.mid { background: var(--risk-mid); } .dot.low { background: var(--risk-low); }
   .guide .bench { margin-top: 8px; font-size: 13px; color: var(--muted); }
 
-  /* Worklist */
-  .list-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 8px; }
+  /* Worklist header + filter */
+  .list-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px; }
   h2 { font-size: 18px; margin: 0; }
-  .list-head p { margin: 0; color: var(--muted); font-size: 13px; }
+  .filters { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+  .filters .label { margin-right: 4px; }
+  .chip {
+    display: inline-flex; align-items: center; gap: 6px; cursor: pointer;
+    padding: 5px 12px; border-radius: 999px; border: 1px solid var(--border); background: var(--surface);
+    font-size: 13px; font-weight: 600;
+  }
+  .chip:hover { border-color: var(--muted); }
+  .chip .n { font-family: var(--font-data); font-weight: 500; color: var(--muted); }
+  .chip[aria-pressed="true"] { background: var(--text); border-color: var(--text); color: var(--bg); }
+  .chip[aria-pressed="true"] .n { color: inherit; opacity: .75; }
+  .list-note { margin: 8px 0 12px; color: var(--muted); font-size: 13px; }
+
+  /* Table */
   .table-wrap { overflow-x: auto; }
   table { width: 100%; border-collapse: collapse; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
   th, td { text-align: left; padding: 14px 16px; vertical-align: top; }
   th { font-size: 12px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); border-bottom: 1px solid var(--border); white-space: nowrap; }
+  tbody tr { cursor: pointer; }
+  tbody tr:hover td { background: var(--row-hover); }
+  tbody tr.selected td { background: var(--row-selected); }
   tbody tr + tr td { border-top: 1px solid var(--border); }
   .num { font-family: var(--font-data); font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .empty td { text-align: center; color: var(--muted); padding: 32px 16px; cursor: default; }
 
   .acct { display: grid; grid-template-columns: auto 1fr; column-gap: 10px; }
   .rank { font-family: var(--font-data); color: var(--muted); grid-row: span 2; }
-  .acct-name { font-weight: 600; }
+  .acct-btn { all: unset; font-weight: 600; cursor: pointer; border-radius: 4px; }
+  .acct-btn:hover { text-decoration: underline; text-underline-offset: 3px; }
+  .acct-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
   .acct-meta { font-size: 13px; color: var(--muted); }
 
+  .churn-cell { display: grid; gap: 6px; justify-items: start; }
   .churn { font-weight: 600; }
+  .pill { display: inline-block; font-size: 11px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; padding: 2px 8px; border-radius: 999px; }
+  .pill.r-high { background: var(--high-soft); color: var(--risk-high); }
+  .pill.r-medium { background: var(--mid-soft); color: var(--risk-mid); }
+  .pill.r-low { background: var(--neutral-soft); color: var(--muted); }
+
   .health { display: grid; grid-template-columns: 2.5ch 96px; align-items: center; gap: 10px; }
   .health-num { font-weight: 600; text-align: right; }
   .bar { position: relative; height: 6px; background: var(--track); border-radius: 3px; }
@@ -91,6 +129,47 @@
   .action b { color: var(--accent); font-weight: 600; white-space: nowrap; }
   .action .due { color: var(--muted); }
 
+  /* Side panel */
+  .scrim { position: fixed; inset: 0; background: var(--scrim); z-index: 10; }
+  .panel {
+    position: fixed; top: 0; right: 0; bottom: 0; z-index: 11;
+    width: min(440px, 100%); background: var(--surface); border-left: 1px solid var(--border);
+    box-shadow: -12px 0 32px rgba(0, 0, 0, .12);
+    display: flex; flex-direction: column;
+    padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px);
+    animation: slide-in .22s ease-out;
+  }
+  @keyframes slide-in { from { transform: translateX(24px); opacity: 0; } to { transform: none; opacity: 1; } }
+  @media (prefers-reduced-motion: reduce) { .panel { animation: none; } }
+  .panel-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; padding: 20px 20px 16px; border-bottom: 1px solid var(--border); }
+  .panel-head h3 { margin: 0; font-size: 20px; text-wrap: balance; }
+  .panel-head .acct-meta { margin-top: 2px; }
+  .close { flex: none; width: 32px; height: 32px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface); cursor: pointer; font-size: 18px; line-height: 1; }
+  .close:hover { background: var(--row-hover); }
+  .panel-body { overflow-y: auto; padding: 20px; display: grid; gap: 22px; align-content: start; }
+  .panel-section { display: grid; gap: 8px; }
+
+  .score-row { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+  .score-big { font: 600 40px/1 var(--font-data); }
+  .score-band { font-weight: 600; }
+  .bar.wide { height: 8px; }
+  .score-scale { display: flex; justify-content: space-between; font: 500 11px/1 var(--font-data); color: var(--muted); }
+  .score-note { font-size: 13px; color: var(--muted); }
+  .kv { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+  .kv div { display: grid; gap: 2px; }
+  .kv .v { font: 600 16px/1.3 var(--font-data); }
+  .risk-reason { margin: 0; font-size: 16px; font-weight: 500; }
+
+  .timeline { list-style: none; margin: 0; padding: 0; display: grid; }
+  .timeline li { display: grid; grid-template-columns: 12px 1fr; column-gap: 12px; padding-bottom: 14px; position: relative; }
+  .timeline li::before { content: ""; position: absolute; left: 5px; top: 14px; bottom: 0; width: 2px; background: var(--border); }
+  .timeline li:last-child::before { display: none; }
+  .timeline .node { width: 12px; height: 12px; border-radius: 50%; margin-top: 4px; background: var(--surface); border: 2px solid var(--muted); position: relative; z-index: 1; }
+  .timeline .node.neg { border-color: var(--risk-high); background: var(--high-soft); }
+  .timeline .ev-meta { font-size: 12px; color: var(--muted); display: flex; gap: 8px; flex-wrap: wrap; }
+  .timeline .ev-type { font-weight: 600; text-transform: uppercase; letter-spacing: .05em; }
+  .timeline .ev-text { margin-top: 2px; }
+
   @media (max-width: 860px) {
     .summary { grid-template-columns: repeat(3, minmax(0, 1fr)); }
     .guide { grid-column: 1 / -1; }
@@ -104,13 +183,18 @@
     thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
     table { border: 0; background: none; }
     tbody tr { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 14px; margin-bottom: 10px; }
+    tbody tr:hover td, tbody tr.selected td { background: none; }
+    tbody tr.selected { border-color: var(--accent); }
     tbody tr + tr td { border-top: 0; }
     td { padding: 4px 0; }
     td[data-label] { display: flex; align-items: center; gap: 8px; }
     td[data-label]::before { content: attr(data-label); flex: none; width: 6.5em; color: var(--muted); font: 600 12px/1.4 var(--font-body); text-transform: uppercase; letter-spacing: .05em; }
+    .churn-cell { display: flex; align-items: center; gap: 8px; }
     td.health-cell { align-items: flex-start; }
     td.reason { display: block; max-width: none; margin-top: 6px; }
     td.reason::before { display: block; width: auto; margin-bottom: 4px; }
+    .panel { border-left: 0; }
+    .kv { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
   }
 </style>
 
@@ -122,7 +206,7 @@
       Your daily worklist as a customer success manager. Accounts are ranked by their
       <strong>likelihood to churn within 30 days</strong>, predicted from product usage, support tickets,
       billing and relationship signals. Each row shows the main reason for the risk and the
-      <strong>recommended next step</strong>. Start at the top and work down.
+      <strong>recommended next step</strong>. Filter by risk level, and click an account to see its recent activity.
     </p>
   </header>
 
@@ -144,9 +228,13 @@
   <section>
     <div class="list-head">
       <h2>Priority worklist</h2>
-      <p>Tick on each bar = healthy benchmark (70)</p>
+      <div class="filters" role="group" aria-label="Filter by risk level">
+        <span class="label">Risk level</span>
+        <span id="chips" class="filters"></span>
+      </div>
     </div>
-    <div class="table-wrap" style="margin-top:12px">
+    <p class="list-note" id="list-note"></p>
+    <div class="table-wrap">
       <table>
         <thead>
           <tr>
@@ -163,61 +251,165 @@
   </section>
 </main>
 
+<div class="scrim" id="scrim" hidden></div>
+<aside class="panel" id="panel" role="dialog" aria-modal="true" aria-labelledby="p-name" hidden>
+  <div class="panel-head">
+    <div>
+      <h3 id="p-name"></h3>
+      <div class="acct-meta" id="p-meta"></div>
+    </div>
+    <button class="close" id="p-close" type="button" aria-label="Close account details">×</button>
+  </div>
+  <div class="panel-body">
+    <section class="panel-section" aria-labelledby="p-h-health">
+      <div class="label" id="p-h-health">Health score</div>
+      <div class="score-row"><span class="score-big" id="p-score"></span><span class="score-band" id="p-band"></span></div>
+      <span class="bar wide" aria-hidden="true"><span class="fill" id="p-fill"></span><span class="bench-tick"></span></span>
+      <div class="score-scale" aria-hidden="true"><span>0</span><span>Healthy 70</span><span>100</span></div>
+      <div class="score-note" id="p-score-note"></div>
+    </section>
+
+    <section class="panel-section">
+      <div class="kv">
+        <div><span class="label">Churn (30d)</span><span class="v" id="p-churn"></span></div>
+        <div><span class="label">ARR</span><span class="v" id="p-arr"></span></div>
+        <div><span class="label">Renewal</span><span class="v" id="p-renew"></span></div>
+      </div>
+    </section>
+
+    <section class="panel-section" aria-labelledby="p-h-reason">
+      <div class="label" id="p-h-reason">Top churn reason</div>
+      <p class="risk-reason" id="p-reason"></p>
+      <div class="action" id="p-action"></div>
+    </section>
+
+    <section class="panel-section" aria-labelledby="p-h-activity">
+      <div class="label" id="p-h-activity">Recent activity</div>
+      <ol class="timeline" id="p-activity"></ol>
+    </section>
+  </div>
+</aside>
+
 <script>
   // ---- Example data: replace with a fetch() from your CS platform later ----
-  const PORTFOLIO_MEDIAN_HEALTH = 72;   // median across the whole book, all accounts
+  const AS_OF = new Date(2026, 9, 6);        // date the risk scores were computed
+  const PORTFOLIO_MEDIAN_HEALTH = 72;        // median across the whole book, all accounts
   const HEALTHY_BENCHMARK = 70;
+  // activity: [days ago, type, text, negative signal?]
   const accounts = [
-    { name: "Northwind Logistics",   industry: "Logistics",    arr: 184000, renewalDays: 26,  healthScore: 22, churnProbability30d: 0.81,
+    { name: "Northwind Logistics", industry: "Logistics", arr: 184000, renewalDays: 26, healthScore: 22, churnProbability30d: 0.81,
       topRiskReason: "Executive sponsor left the company; no replacement identified",
-      nextStep: "Ask your main contact to introduce the new VP of Ops and book an exec alignment call", due: "this week" },
-    { name: "Brightline Dental",     industry: "Healthcare",   arr: 62000,  renewalDays: 41,  healthScore: 28, churnProbability30d: 0.74,
+      nextStep: "Ask your main contact to introduce the new VP of Ops and book an exec alignment call", due: "this week",
+      activity: [[2, "Email", "Main contact confirmed the VP of Operations has left; no successor named yet", true],
+                 [6, "Usage", "Dashboard logins down 35% week over week", true],
+                 [13, "Meeting", "Monthly check-in cancelled by customer", true],
+                 [24, "Support", "Ticket resolved: CSV export timeout", false]] },
+    { name: "Brightline Dental", industry: "Healthcare", arr: 62000, renewalDays: 41, healthScore: 28, churnProbability30d: 0.74,
       topRiskReason: "Weekly active users down 42% over the last 30 days",
-      nextStep: "Pull the usage drop by team and offer a re-onboarding session for the inactive offices", due: "in 3 days" },
-    { name: "Cobalt Freight",        industry: "Logistics",    arr: 128000, renewalDays: 22,  healthScore: 31, churnProbability30d: 0.69,
+      nextStep: "Pull the usage drop by team and offer a re-onboarding session for the inactive offices", due: "in 3 days",
+      activity: [[1, "Usage", "Weekly active users at 58 (was 100 a month ago)", true],
+                 [9, "Usage", "3 of 7 office locations have had no logins for 14 days", true],
+                 [16, "Email", "Office manager asked how to export patient reminders", false],
+                 [30, "Meeting", "QBR held; customer flagged staff turnover at two offices", false]] },
+    { name: "Cobalt Freight", industry: "Logistics", arr: 128000, renewalDays: 22, healthScore: 31, churnProbability30d: 0.69,
       topRiskReason: "Evaluating a competitor (mentioned on last call)",
-      nextStep: "Run a value review showing ROI to date; loop in your AE on renewal terms", due: "this week" },
-    { name: "Harbor & Pine Realty",  industry: "Real estate",  arr: 48000,  renewalDays: 18,  healthScore: 35, churnProbability30d: 0.63,
+      nextStep: "Run a value review showing ROI to date; loop in your AE on renewal terms", due: "this week",
+      activity: [[3, "Meeting", "Renewal call: buyer said they are \"looking at other options\"", true],
+                 [8, "Billing", "Requested a quote for a 1-year term instead of 3", true],
+                 [15, "Usage", "Route-planning feature usage flat for 6 weeks", true],
+                 [27, "Support", "Feature request logged: multi-depot scheduling", false]] },
+    { name: "Harbor & Pine Realty", industry: "Real estate", arr: 48000, renewalDays: 18, healthScore: 35, churnProbability30d: 0.63,
       topRiskReason: "Renewal in 18 days with no QBR held this year",
-      nextStep: "Book a QBR before renewal and send a usage recap in advance", due: "today" },
-    { name: "Meridian Health Group", industry: "Healthcare",   arr: 210000, renewalDays: 74,  healthScore: 38, churnProbability30d: 0.58,
+      nextStep: "Book a QBR before renewal and send a usage recap in advance", due: "today",
+      activity: [[4, "Billing", "Renewal notice sent automatically; no reply", true],
+                 [12, "Email", "QBR invite sent; no response", true],
+                 [35, "Usage", "Listing-sync usage steady at 80% of seats", false],
+                 [60, "Email", "Admin contact changed to a new office manager", false]] },
+    { name: "Meridian Health Group", industry: "Healthcare", arr: 210000, renewalDays: 74, healthScore: 38, churnProbability30d: 0.58,
       topRiskReason: "3 unresolved P1 support tickets older than 10 days",
-      nextStep: "Escalate the tickets to the support lead and send the customer a dated fix plan", due: "today" },
-    { name: "Fieldstone Analytics",  industry: "Software",     arr: 36000,  renewalDays: 95,  healthScore: 41, churnProbability30d: 0.52,
+      nextStep: "Escalate the tickets to the support lead and send the customer a dated fix plan", due: "today",
+      activity: [[1, "Support", "P1 ticket reopened: lab results not syncing", true],
+                 [5, "Email", "IT director wrote: \"This is now affecting patient care\"", true],
+                 [11, "Support", "Two more P1 tickets opened: SSO login failures", true],
+                 [20, "Usage", "Active users stable at 1,240", false]] },
+    { name: "Fieldstone Analytics", industry: "Software", arr: 36000, renewalDays: 95, healthScore: 41, churnProbability30d: 0.52,
       topRiskReason: "Invoice 45 days overdue",
-      nextStep: "Confirm the billing contact with finance and check whether non-payment is a signal of intent", due: "in 3 days" },
-    { name: "Quillon Legal",         industry: "Legal",        arr: 75000,  renewalDays: 29,  healthScore: 44, churnProbability30d: 0.47,
+      nextStep: "Confirm the billing contact with finance and check whether non-payment is a signal of intent", due: "in 3 days",
+      activity: [[3, "Billing", "Second payment reminder sent; invoice now 45 days overdue", true],
+                 [10, "Email", "Billing contact email bounced", true],
+                 [18, "Usage", "API calls down 20% month over month", true],
+                 [40, "Meeting", "Onboarding for new analytics team completed", false]] },
+    { name: "Quillon Legal", industry: "Legal", arr: 75000, renewalDays: 29, healthScore: 44, churnProbability30d: 0.47,
       topRiskReason: "Only 2 of 25 licensed seats active",
-      nextStep: "Propose a seat-activation plan with the admin, or right-size seats to protect the logo", due: "this week" },
-    { name: "Arcadia Outdoor Co.",   industry: "Retail",       arr: 54000,  renewalDays: 60,  healthScore: 47, churnProbability30d: 0.43,
+      nextStep: "Propose a seat-activation plan with the admin, or right-size seats to protect the logo", due: "this week",
+      activity: [[2, "Usage", "Seat usage: 2 of 25 active in the last 30 days", true],
+                 [14, "Email", "Admin asked whether unused seats can be refunded", true],
+                 [21, "Meeting", "Training webinar: 1 attendee from this account", true],
+                 [45, "Support", "Ticket resolved: matter templates import", false]] },
+    { name: "Arcadia Outdoor Co.", industry: "Retail", arr: 54000, renewalDays: 60, healthScore: 47, churnProbability30d: 0.43,
       topRiskReason: "Requested downgrade to a smaller plan",
-      nextStep: "Find out which features they don't use and show the ones that match their goals", due: "this week" },
-    { name: "Tidewater Schools",     industry: "Education",    arr: 92000,  renewalDays: 120, healthScore: 52, churnProbability30d: 0.38,
+      nextStep: "Find out which features they don't use and show the ones that match their goals", due: "this week",
+      activity: [[5, "Billing", "Downgrade request submitted: Growth → Starter", true],
+                 [9, "Usage", "Inventory forecasting not used in 60 days", true],
+                 [19, "Email", "Ops lead asked about seasonal pricing", false],
+                 [33, "Usage", "Storefront analytics used daily by 4 users", false]] },
+    { name: "Tidewater Schools", industry: "Education", arr: 92000, renewalDays: 120, healthScore: 52, churnProbability30d: 0.38,
       topRiskReason: "Budget freeze announced for next fiscal year",
-      nextStep: "Share a cost-savings case study and offer a multi-year price lock", due: "in 2 weeks" },
-    { name: "Lumen Robotics",        industry: "Manufacturing", arr: 140000, renewalDays: 150, healthScore: 55, churnProbability30d: 0.33,
+      nextStep: "Share a cost-savings case study and offer a multi-year price lock", due: "in 2 weeks",
+      activity: [[6, "Email", "District finance office announced a budget freeze", true],
+                 [12, "Usage", "Teacher logins steady at 310 per week", false],
+                 [22, "Meeting", "Superintendent's office praised attendance reporting", false],
+                 [38, "Support", "Ticket resolved: roster sync from SIS", false]] },
+    { name: "Lumen Robotics", industry: "Manufacturing", arr: 140000, renewalDays: 150, healthScore: 55, churnProbability30d: 0.33,
       topRiskReason: "NPS dropped from 8 to 3 in latest survey",
-      nextStep: "Call the respondent to understand the drop and log the feedback for product", due: "this week" },
-    { name: "Granite Peak Credit",   industry: "Financial services", arr: 98000, renewalDays: 80, healthScore: 58, churnProbability30d: 0.29,
+      nextStep: "Call the respondent to understand the drop and log the feedback for product", due: "this week",
+      activity: [[4, "Survey", "NPS 3 from plant manager: \"Reports are too slow to load\"", true],
+                 [11, "Support", "Ticket: report generation takes over 2 minutes", true],
+                 [17, "Usage", "Daily active users unchanged at 64", false],
+                 [52, "Survey", "Previous NPS: 8", false]] },
+    { name: "Granite Peak Credit", industry: "Financial services", arr: 98000, renewalDays: 80, healthScore: 58, churnProbability30d: 0.29,
       topRiskReason: "Key integration disconnected 12 days ago",
-      nextStep: "Send the reconnect guide and offer a 15-minute session with a solutions engineer", due: "in 3 days" },
-    { name: "Saffron Hospitality",   industry: "Hospitality",  arr: 41000,  renewalDays: 27,  healthScore: 63, churnProbability30d: 0.24,
+      nextStep: "Send the reconnect guide and offer a 15-minute session with a solutions engineer", due: "in 3 days",
+      activity: [[12, "Product", "Core banking integration disconnected (expired API token)", true],
+                 [12, "Usage", "Automated member imports stopped", true],
+                 [15, "Email", "Admin asked about the new security review process", false],
+                 [29, "Meeting", "Check-in: customer happy with loan workflow", false]] },
+    { name: "Saffron Hospitality", industry: "Hospitality", arr: 41000, renewalDays: 27, healthScore: 63, churnProbability30d: 0.24,
       topRiskReason: "Champion unresponsive to last 4 outreach attempts",
-      nextStep: "Try a second contact in the account and ask your AE to reach out through their network", due: "this week" },
-    { name: "Orchard Street Media",  industry: "Media",        arr: 67000,  renewalDays: 110, healthScore: 66, churnProbability30d: 0.21,
+      nextStep: "Try a second contact in the account and ask your AE to reach out through their network", due: "this week",
+      activity: [[3, "Email", "Outreach #4 to champion: no reply", true],
+                 [10, "Email", "Outreach #3 to champion: no reply", true],
+                 [17, "Usage", "Booking module usage steady across 6 hotels", false],
+                 [41, "Meeting", "Last call with champion: discussed expansion to 2 new hotels", false]] },
+    { name: "Orchard Street Media", industry: "Media", arr: 67000, renewalDays: 110, healthScore: 66, churnProbability30d: 0.21,
       topRiskReason: "Acquired by a company using a competing tool",
-      nextStep: "Map the new parent company's decision makers and prepare a consolidation proposal", due: "in 2 weeks" },
-    { name: "Kestrel Aviation",      industry: "Aviation",     arr: 88000,  renewalDays: 200, healthScore: 74, churnProbability30d: 0.14,
-      topRiskReason: "Usage plateaued after onboarding", nextStep: "", due: "" },
-    { name: "Bluebell Bakeries",     industry: "Food & beverage", arr: 22000, renewalDays: 240, healthScore: 82, churnProbability30d: 0.06,
-      topRiskReason: "Minor dip in login frequency", nextStep: "", due: "" },
+      nextStep: "Map the new parent company's decision makers and prepare a consolidation proposal", due: "in 2 weeks",
+      activity: [[7, "Email", "Press release: acquired by a larger media group", true],
+                 [9, "Email", "Main contact: \"Tooling decisions will move to the parent company\"", true],
+                 [20, "Usage", "Content calendar used daily by 12 editors", false],
+                 [44, "Support", "Ticket resolved: CMS publishing webhook", false]] },
+    { name: "Kestrel Aviation", industry: "Aviation", arr: 88000, renewalDays: 200, healthScore: 74, churnProbability30d: 0.14,
+      topRiskReason: "Usage plateaued after onboarding", nextStep: "", due: "", activity: [] },
+    { name: "Bluebell Bakeries", industry: "Food & beverage", arr: 22000, renewalDays: 240, healthScore: 82, churnProbability30d: 0.06,
+      topRiskReason: "Minor dip in login frequency", nextStep: "", due: "", activity: [] },
   ];
   // ---------------------------------------------------------------------------
 
   const RISK_THRESHOLD = 0.2;
+  const LEVELS = [
+    { id: "all", label: "All" },
+    { id: "high", label: "High", hint: "60%+" },
+    { id: "medium", label: "Medium", hint: "40–59%" },
+    { id: "low", label: "Low", hint: "20–39%" },
+  ];
 
   const band = s => (s <= 40 ? "high" : s <= 70 ? "mid" : "low");
+  const bandName = s => (s <= 40 ? "Critical" : s <= 70 ? "Watch" : "Healthy");
+  const riskLevel = p => (p >= 0.6 ? "high" : p >= 0.4 ? "medium" : "low");
   const money = n => "$" + (n >= 1e6 ? (n / 1e6).toFixed(2) + "M" : Math.round(n / 1000) + "K");
+  const pct = p => Math.round(p * 100) + "%";
+  const dateFmt = new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric" });
+  const ago = d => (d === 0 ? "today" : d === 1 ? "yesterday" : d + " days ago");
 
   function el(tag, className, text) {
     const e = document.createElement(tag);
@@ -230,12 +422,22 @@
     if (label) td.dataset.label = label;
     return td;
   }
+  function actionBox(target, a) {
+    const text = el("span", null, a.nextStep + " ");
+    text.append(el("span", "due", "(" + a.due + ")"));
+    target.replaceChildren(el("b", null, "Next step"), text);
+  }
 
-  function render(list) {
-    const atRisk = list
-      .filter(a => a.churnProbability30d >= RISK_THRESHOLD)
-      .sort((a, b) => b.churnProbability30d - a.churnProbability30d);
+  const atRisk = accounts
+    .filter(a => a.churnProbability30d >= RISK_THRESHOLD)
+    .sort((a, b) => b.churnProbability30d - a.churnProbability30d)
+    .map((a, i) => ({ ...a, rank: i + 1, level: riskLevel(a.churnProbability30d) }));
 
+  let filter = "all";
+  let selected = null;
+  let returnFocus = null;
+
+  function renderSummary() {
     const totalArr = atRisk.reduce((s, a) => s + a.arr, 0);
     const expectedLoss = atRisk.reduce((s, a) => s + a.arr * a.churnProbability30d, 0);
     document.getElementById("s-count").textContent = atRisk.length;
@@ -245,24 +447,63 @@
     const below = atRisk.filter(a => a.healthScore < PORTFOLIO_MEDIAN_HEALTH).length;
     document.getElementById("s-bench").textContent =
       "Benchmark: portfolio median is " + PORTFOLIO_MEDIAN_HEALTH + ". " + below + " of " + atRisk.length + " accounts here are below it.";
+  }
+
+  function renderChips() {
+    const wrap = document.getElementById("chips");
+    wrap.replaceChildren();
+    LEVELS.forEach(l => {
+      const n = l.id === "all" ? atRisk.length : atRisk.filter(a => a.level === l.id).length;
+      const b = el("button", "chip");
+      b.type = "button";
+      b.setAttribute("aria-pressed", String(filter === l.id));
+      if (l.hint) b.title = l.label + " risk: " + l.hint + " churn likelihood";
+      b.append(document.createTextNode(l.label), el("span", "n", n));
+      b.addEventListener("click", () => { filter = l.id; renderChips(); renderRows(); });
+      wrap.append(b);
+    });
+  }
+
+  function renderRows() {
+    const shown = filter === "all" ? atRisk : atRisk.filter(a => a.level === filter);
+    const lvl = LEVELS.find(l => l.id === filter);
+    document.getElementById("list-note").textContent = filter === "all"
+      ? "Showing all " + atRisk.length + " at-risk accounts. Click an account for details. Tick on each bar = healthy benchmark (70)."
+      : "Showing " + shown.length + " of " + atRisk.length + " accounts with " + lvl.label.toLowerCase() + " risk (" + lvl.hint + " churn likelihood).";
 
     const tbody = document.getElementById("rows");
     tbody.replaceChildren();
 
-    atRisk.forEach((a, i) => {
+    if (!shown.length) {
+      const tr = el("tr", "empty");
+      const td = el("td", null, "No accounts at this risk level.");
+      td.colSpan = 5;
+      tr.append(td);
+      tbody.append(tr);
+      return;
+    }
+
+    shown.forEach(a => {
       const tr = el("tr");
+      if (selected === a) tr.classList.add("selected");
 
       const acct = cell(null);
       const wrap = el("div", "acct");
-      wrap.append(el("span", "rank", i + 1), el("span", "acct-name", a.name),
+      const btn = el("button", "acct-btn", a.name);
+      btn.type = "button";
+      btn.setAttribute("aria-haspopup", "dialog");
+      wrap.append(el("span", "rank", a.rank), btn,
         el("span", "acct-meta", a.industry + " · renews in " + a.renewalDays + " days"));
       acct.append(wrap);
 
       const arr = cell("ARR", "num");
       arr.textContent = money(a.arr);
 
-      const churn = cell("Churn", "num churn");
-      churn.textContent = Math.round(a.churnProbability30d * 100) + "%";
+      const churn = cell("Churn");
+      const cw = el("div", "churn-cell");
+      cw.append(el("span", "num churn", pct(a.churnProbability30d)),
+        el("span", "pill r-" + a.level, a.level + " risk"));
+      churn.append(cw);
 
       const b = band(a.healthScore);
       const health = cell("Health", "health-cell");
@@ -280,15 +521,98 @@
 
       const reason = cell("Top risk & next step", "reason");
       const action = el("div", "action");
-      const text = el("span", null, a.nextStep + " ");
-      text.append(el("span", "due", "(" + a.due + ")"));
-      action.append(el("b", null, "Next step"), text);
+      actionBox(action, a);
       reason.append(el("p", "why", a.topRiskReason), action);
 
       tr.append(acct, arr, churn, health, reason);
+      tr.addEventListener("click", () => openPanel(a, btn));
       tbody.append(tr);
     });
   }
 
-  render(accounts);
+  const panel = document.getElementById("panel");
+  const scrim = document.getElementById("scrim");
+
+  function openPanel(a, trigger) {
+    selected = a;
+    returnFocus = trigger;
+    const b = band(a.healthScore);
+    const gap = HEALTHY_BENCHMARK - a.healthScore;
+
+    document.getElementById("p-name").textContent = a.name;
+    document.getElementById("p-meta").textContent = "#" + a.rank + " at risk · " + a.industry;
+
+    const score = document.getElementById("p-score");
+    score.textContent = a.healthScore;
+    score.className = "score-big " + b;
+    const bandEl = document.getElementById("p-band");
+    bandEl.textContent = bandName(a.healthScore);
+    bandEl.className = "score-band " + b;
+    const fill = document.getElementById("p-fill");
+    fill.className = "fill " + b;
+    fill.style.width = a.healthScore + "%";
+    document.getElementById("p-score-note").textContent =
+      (gap > 0 ? gap + " pts below the healthy benchmark (70)" : "At or above the healthy benchmark (70)") +
+      " · portfolio median " + PORTFOLIO_MEDIAN_HEALTH;
+
+    document.getElementById("p-churn").textContent = pct(a.churnProbability30d);
+    document.getElementById("p-arr").textContent = money(a.arr);
+    document.getElementById("p-renew").textContent = a.renewalDays + "d";
+
+    document.getElementById("p-reason").textContent = a.topRiskReason;
+    actionBox(document.getElementById("p-action"), a);
+
+    const list = document.getElementById("p-activity");
+    list.replaceChildren();
+    a.activity.forEach(([days, type, text, negative]) => {
+      const li = el("li");
+      const when = new Date(AS_OF);
+      when.setDate(when.getDate() - days);
+      const meta = el("div", "ev-meta");
+      meta.append(el("span", "ev-type", type), el("span", null, dateFmt.format(when) + " · " + ago(days)));
+      const body = el("div");
+      body.append(meta, el("div", "ev-text", text));
+      li.append(el("span", "node" + (negative ? " neg" : "")), body);
+      if (negative) li.setAttribute("aria-label", "Risk signal. " + type + ", " + ago(days) + ": " + text);
+      list.append(li);
+    });
+
+    panel.hidden = false;
+    scrim.hidden = false;
+    document.body.classList.add("panel-open");
+    panel.querySelector(".panel-body").scrollTop = 0;
+    document.getElementById("p-close").focus();
+    renderRows();
+  }
+
+  function closePanel() {
+    if (panel.hidden) return;
+    panel.hidden = true;
+    scrim.hidden = true;
+    document.body.classList.remove("panel-open");
+    const name = selected && selected.name;
+    selected = null;
+    renderRows();
+    // the row was re-rendered, so return focus to the new button for the same account
+    const target = [...document.querySelectorAll(".acct-btn")].find(b => b.textContent === name);
+    (target || returnFocus || document.body).focus();
+  }
+
+  document.getElementById("p-close").addEventListener("click", closePanel);
+  scrim.addEventListener("click", closePanel);
+  document.addEventListener("keydown", e => {
+    if (panel.hidden) return;
+    if (e.key === "Escape") { closePanel(); return; }
+    if (e.key === "Tab") {   // keep keyboard focus inside the open panel
+      const f = [...panel.querySelectorAll("button, [href], [tabindex]:not([tabindex='-1'])")];
+      if (!f.length) return;
+      const first = f[0], last = f[f.length - 1];
+      if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+    }
+  });
+
+  renderSummary();
+  renderChips();
+  renderRows();
 </script>
