@@ -6,11 +6,11 @@
 
 _Tick the scenario you built in Lab 1 (the same one you selected in the lab guide), or name your own._
 
-- [ ] Scenario 01 · The Retention Engine
+- [x] Scenario 01 · The Retention Engine
 - [ ] Scenario 02 · The Internal Tool Nobody Uses
 - [ ] Scenario 03 · The Marketplace Trust Problem
 - [ ] Scenario 04 · The Dashboard Nobody Reads
-- [x] My own (instructor-approved): _____
+- [ ] My own (instructor-approved): _____
 
 ## Launch path
 
@@ -21,7 +21,7 @@ _Tick the scenario you built in Lab 1 (the same one you selected in the lab guid
 
 - **What I built:** Lists the churn drivers for retention engine
 - **Tool used:** Claude Code
-- **Shareable link:** https://claude.ai/artifact/4fNewVfJ4ASscrKWTVhiER
+- **Shareable link:** https://claude.ai/artifact/4fNewVfJ4ASscrKWTVhiER (now shows the latest version; the v1 build as shown in Show & Swap is saved in [`prototype-v1.html`](prototype-v1.html))
 
 ## Show & Swap read
 

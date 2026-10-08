@@ -12,7 +12,7 @@ Context of what the Retention Engine does
 
 - [ ] Design Match
 - [x] Add Interactivity
-- [ ] Surgical Refinement
+- [x] Surgical Refinement
 - [ ] Existing Product Track
 
 ## v2 build
@@ -20,7 +20,8 @@ Context of what the Retention Engine does
 - **Shareable link:** https://claude.ai/artifact/4fNewVfJ4ASscrKWTVhiER
 - **Before → after:** Generic with all information at once to more interactive and grouping/filtering of the content
 - **What each pass changed:**
-  - Add Interactivity: Grouping the risk level into four groups (All, High, Medium and Low)
+  - Surgical Refinement: Added a header and intro explaining what the Retention Engine does, a health score benchmark (healthy at 70, portfolio median 72), ARR at risk, and a recommended next step for each account
+  - Add Interactivity: Grouping the risk level into four groups (All, High, Medium and Low), and a side panel that opens when you click an account, showing its health score, top churn reason and recent activity
 
 ## Show & Swap read, round 2
 
