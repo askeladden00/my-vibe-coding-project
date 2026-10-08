@@ -6,23 +6,26 @@
 
 _Where does it look like a toy? Where would a VP of Design refuse to open it? Where does the logic feel fake? Pick the one spot that costs you the most credibility._
 
-_____
+Context of what the Retention Engine does
 
 ## Upgrade paths run (pick two)
 
 - [ ] Design Match
-- [ ] Add Interactivity
+- [x] Add Interactivity
 - [ ] Surgical Refinement
 - [ ] Existing Product Track
 
 ## v2 build
 
-- **v2 shareable link:** _____
-- **Before → after:** _____
-- **What each pass changed:** _____
+- **Shareable link:** https://claude.ai/artifact/4fNewVfJ4ASscrKWTVhiER
+- **Before → after:** Generic with all information at once to more interactive and grouping/filtering of the content
+- **What each pass changed:**
+  - Add Interactivity: Grouping the risk level into four groups (All, High, Medium and Low)
 
 ## Show & Swap read, round 2
 
 _A NEW partner, a blind read. What landed differently from v1?_
 
-_____
+- **Feels like a real product, or a mockup?** Real product as it is interactive and the numbers have reference
+- **Where interactivity fell short:** Only a few toggles that did not go deep enough
+- **Would they show it to a VP?** No, it is low fidelity and does not have the right flow yet
