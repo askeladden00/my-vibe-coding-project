@@ -14,7 +14,7 @@ Time between sign up/first seeing the product and activation/using it is more th
 
 ## Hypothesis
 
-> We believe **Max 5 onboarding steps** will cause **the user  to complete the onboarding and less likely to abandon the flow** for **new B2B SaaS accounts**. We'll know we're right when **week-one activation rises above 60% and 60-day churn drops**.
+> We believe **5 or less onboarding steps** will cause **the user  to complete the onboarding and less likely to abandon the flow** for **new B2B SaaS accounts**. We'll know we're right when **week-one activation rises above 60% and 60-day churn drops**.
 
 ## Risk type
 
