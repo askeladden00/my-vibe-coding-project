@@ -10,7 +10,7 @@ https://claude.ai/artifact/MpkkYNsHSrDQ34fK3agyQU
 
 _Tie it back to the validation brief: which assumption does this prototype put in front of a user?_
 
-New accounts never reach first value in week one, so they churn before they see the point.
+Tests whether guided activation helps new users quickly understand and experience the product’s core team value.
 
 ## Context injected (no placeholders)
 
@@ -21,6 +21,6 @@ New accounts never reach first value in week one, so they churn before they see 
 
 | Version | Change | Why |
 |---|---|---|
-| v1 | Give user a pre-filled drop down for them to pick their workspace in addition to naming their workspace | Users abandoned the onboarding when user had to name his/her workspace |
-| v2 | Add an info tip for each metric on the "Pick the one number you need to move" screen,, so the user knows what he is picking | Users are not sure what the metric means |
-| v3 | The workspace page is confusing on what the user should do. The page should be organized with retention dashboard first, actions that users can do second with more explanation than there is now | User is confused what the workspace page should do |
+| v1 | Added action items/next steps to act on accounts at risk | Users can act on the data/issue |
+| v2 | Grouped together accounts into categories | Allow users to filter on the account at most risk and take care of them first |
+| v3 | Added a guided questionnaire | Enable users to reach the aha moment faster |
