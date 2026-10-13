@@ -10,11 +10,11 @@ Scenario 01 · The Retention Engine
 
 _The one belief that, if false, sinks the idea._
 
-Time between sign up/first seeing the product and activation/using it is more than 7 days, the user is likely not going to use the product
+New B2B SaaS accounts churn because they fail to understand and experience the product's core team value early enough—not because the underlying product lacks value.
 
 ## Hypothesis
 
-> We believe **5 or less onboarding steps** will cause **the user  to complete the onboarding and less likely to abandon the flow** for **new B2B SaaS accounts**. We'll know we're right when **week-one activation rises above 60% and 60-day churn drops**.
+> We believe **Replace exploratory onboarding with a guided, outcome-based activation flow that gets users to the core “aha” moment and prompts them to involve their team** will cause **New accounts understand the product's team value and reach first value faster, increasing activation and early team adoption.** for **new B2B SaaS accounts**. We'll know we're right when **≥50% of test users reach the “aha” action during the prototype session and can correctly explain the team value without prompting.**.
 
 ## Risk type
 
@@ -27,7 +27,7 @@ Time between sign up/first seeing the product and activation/using it is more th
 
 _The result that would make you stop or pivot._
 
-If 5 onboarding steps doesn’t move activation and adoption, fewer onboarding step is not the issue, pivot.
+If fewer than 30% of test users reach the “aha” action and correctly explain the team value without prompting, stop iterating on guided onboarding and revisit the underlying value proposition.
 
 ## The three ingredients
 
@@ -38,7 +38,6 @@ If 5 onboarding steps doesn’t move activation and adoption, fewer onboarding s
   - $1.1M, ARR at risk in the next renewal window.
   - 6.2 days, Time-to-first-value: median, vs. 1-day target.
 - **User voice (verbatim quotes):**
-  - "We renewed once but couldn't point to a single number that changed because of it.", VP Product, did not renew
-  - "The value was probably in there somewhere, but I needed it to prove itself in week one, not month three.", Founder, churned day 63
+  - "I signed up, poked around for ten minutes, and never figured out what it actually did for my team.", Ops lead, churned day 12
   - "Nobody on my team adopted it, so I stopped logging in. It felt like one more tool to babysit.", Eng manager, churned day 47
 - **Hypothesis (above):** ✓
