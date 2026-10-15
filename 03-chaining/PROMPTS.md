@@ -39,11 +39,10 @@ Don't change anything else in the project or touch the underlying logic.
 
 ## Reusable techniques learned
 
-- _____
-- _____
+- The chainring makes the vibe coding more structured and intentional than coding by trial and error
 
 ## What broke (and the fix)
 
 _Where a single mega-prompt failed and chaining fixed it._
 
-_____
+With a mega prompt, AI sometimes interprets the instructions wrong while chaining makes it structured and more predictable and repeatable
