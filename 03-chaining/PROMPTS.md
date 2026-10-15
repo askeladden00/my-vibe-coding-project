@@ -6,28 +6,36 @@
 
 _Each prompt is a reusable step. Chain them: the output of one becomes the input to the next._
 
-## Prompt chain: [name your flow]
+## Prompt chain: Onboarding Chain
 
-### Step 1: [purpose]
+### Step 1: Expand, build new screens in a strict sequence
 ```
-[prompt text, with {{variables}} for the parts you swap]
-```
-**Expects in:** _____
-**Produces out:** _____
+Build the next phase of this app in a strict sequence:
+1. Add a screen "{{Call to Action}}". Match the layout and spacing of the attached {{Notion1}} screenshot.
+2. Add a screen "{{Account Status}}". Match the data density of the attached {{Notion2}} screenshot.
+3. Navigation: On the Call to Action screen user executes his/her CTA and can mark it as done in which the user lands on the Account Status page
 
-### Step 2: [purpose]
+Build these in order so {{screen A}} is the anchor for {{screen B}}.
 ```
-[prompt text]
-```
-**Expects in:** _____
-**Produces out:** _____
 
-### Step 3: [purpose]
+### Step 2: Behavior, hard-code the states
 ```
-[prompt text]
+Apply the following logic constraints to the {{screen}} flow:
+- Use skeleton screens for the {{list}} loading state.
+- If no data is present, show the empty state: "{{empty-state message}}".
+- On fetch failure, trigger the error state: "{{error message}}".
+
+Maintain the same design language throughout and tether all behavior strictly to these rules.
 ```
-**Expects in:** _____
-**Produces out:** _____
+
+### Step 3: Refine, one surgical polish
+```
+The {{screen}} needs a professional {{style}} polish.
+1. Start by listing the 3 biggest gaps in typography and spacing compared to {{reference}}.
+2. Once you've identified those, resize the headers and update the {{element}} to match.
+
+Don't change anything else in the project or touch the underlying logic.
+```
 
 ## Reusable techniques learned
 
