@@ -15,7 +15,7 @@ Build the next phase of this app in a strict sequence:
 2. Add a screen "{{Account Status}}". Match the data density of the attached {{Notion2}} screenshot.
 3. Navigation: On the Call to Action screen user executes his/her CTA and can mark it as done in which the user lands on the Account Status page
 
-Build these in order so {{screen A}} is the anchor for {{screen B}}.
+Build these in order so {{Call to Action}} is the anchor for {{Account Status}}.
 ```
 
 ### Step 2: Behavior, hard-code the states
