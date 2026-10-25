@@ -47,5 +47,5 @@ Partly right, and partly a trap. Saying what each step does helps. Saying why it
 ## Final showcase
 
 - **Demo link:** https://glittering-sfogliatella-ee1d16.netlify.app
-- **The one-sentence story:** _____
+- **The one-sentence story:** A prototype that tests whether guided onboarding beats exploration at showing new users the team value.
 - **Where it landed on the Confidence Line (M2 → now):** The Retention Engine is a clickable prototype that tests whether a guided, outcome-based setup gets new users to assign an at-risk account to a teammate and explain the team value without being told, compared with today’s exploratory onboarding.
