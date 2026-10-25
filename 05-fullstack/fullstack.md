@@ -6,7 +6,7 @@
 
 _The working, shareable link that survives real users._
 
-_____
+https://frolicking-blini-61066e.netlify.app
 
 ## Data schema
 
@@ -33,4 +33,4 @@ Since Oct 24, every result row belongs to one account: a signed-in user reads an
 
 _What you threw at it, and what held / broke._
 
-_____
+Spam click 5x - the page held its line and only created on record
