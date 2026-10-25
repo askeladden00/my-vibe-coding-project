@@ -18,7 +18,7 @@ _Observed behaviour: reach 2 of 4; core action 2 of 2; stall point which flow to
 
 | Change | Hypothesis | Result |
 |---|---|---|
-| _____ | _____ | _____ |
+| Purpose/value of each guided page | User does not know what the page is supposed to do | User completed the guided tour 100% of the time knowing what each step did |
 
 ## Peer feedback
 
@@ -38,14 +38,14 @@ this might be just on my desktop / personal preference, but you could probably t
 
 ## The recommendation
 
-**Decision:** ☐ Go  ☐ Iterate  ☐ Kill
+**Decision:** ☐ Go  ☑ Iterate  ☐ Kill
 
 _The evidence that justifies the call:_
 
-_____
+Partly right, and partly a trap. Saying what each step does helps. Saying why it helps the team would hand them the answer you’re scoring.
 
 ## Final showcase
 
-- **Demo link:** _____
+- **Demo link:** https://glittering-sfogliatella-ee1d16.netlify.app
 - **The one-sentence story:** _____
-- **Where it landed on the Confidence Line (M2 → now):** _____
+- **Where it landed on the Confidence Line (M2 → now):** The Retention Engine is a clickable prototype that tests whether a guided, outcome-based setup gets new users to assign an at-risk account to a teammate and explain the team value without being told, compared with today’s exploratory onboarding.
