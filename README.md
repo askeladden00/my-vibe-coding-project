@@ -11,11 +11,11 @@ This is a **template repo**. Click **Use this template → Create a new reposito
 | # | Module | Commits | Status | Folder |
 |---|---|---|---|---|
 | 1 | **Velocity** | `prototype-v1.md` · `prototype-v2.md` · `confidence-line-reflection.md` | ☑ | `01-velocity/` |
-| 2 | **Validation** | `validation-brief.md` · `prototype-v3.md` · `show-and-swap-notes.md` | ☐ | `02-validation/` |
-| 3 | **Prompt Chaining** | `PROMPTS.md` (Living Prompt Pack) | ☐ | `03-chaining/` |
-| 4 | **Production Specs** | `PRD.md` · `handoff-note.md` | ☐ | `04-production/` |
-| 5 | **Full-Stack** | deployed share link + hardening notes | ☐ | `05-fullstack/` |
-| 6 | **Evals & Iteration** | final showcase + go/iterate/kill recommendation | ☐ | `06-iteration/` |
+| 2 | **Validation** | `validation-brief.md` · `prototype-v3.md` · `show-and-swap-notes.md` | ☑ | `02-validation/` |
+| 3 | **Prompt Chaining** | `PROMPTS.md` (Living Prompt Pack) | ☑ | `03-chaining/` |
+| 4 | **Production Specs** | `PRD.md` · `handoff-note.md` | ☑ | `04-production/` |
+| 5 | **Full-Stack** | deployed share link + hardening notes | ☑ | `05-fullstack/` |
+| 6 | **Evals & Iteration** | final showcase + go/iterate/kill recommendation | ☑ | `06-iteration/` |
 
 ## My scenario
 
